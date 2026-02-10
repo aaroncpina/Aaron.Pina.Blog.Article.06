@@ -89,7 +89,7 @@ app.MapPost("/blacklist", async (IDistributedCache blacklist, BlacklistRequest r
     {
         var expires = new DateTimeOffset(request.AccessTokenExpiresAt);
         if (expires < DateTimeOffset.UtcNow) return Results.BadRequest("Token already expired");
-        await blacklist.SetStringAsync(request.Jti.ToString(), string.Empty, new DistributedCacheEntryOptions
+        await blacklist.SetStringAsync(request.Jti.ToString(), "revoked", new DistributedCacheEntryOptions
         {
             AbsoluteExpiration = expires
         });

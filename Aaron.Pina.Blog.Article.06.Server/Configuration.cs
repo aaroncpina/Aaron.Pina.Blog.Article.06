@@ -1,9 +1,11 @@
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
+using System.Security.Claims;
 
 namespace Aaron.Pina.Blog.Article._06.Server;
 
@@ -24,6 +26,17 @@ public static class Configuration
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new RsaSecurityKey(rsa.ExportParameters(false))
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async context =>
+                    {
+                        var jti = context.Principal?.FindFirstValue("jti");
+                        if (string.IsNullOrEmpty(jti)) return;
+                        var blacklist = context.HttpContext.RequestServices.GetRequiredService<IDistributedCache>();
+                        var val = await blacklist.GetStringAsync(jti);
+                        if (val == "revoked") context.Fail("Token has been invalidated");
+                    }
                 };
                 options.MapInboundClaims = false;
             };
