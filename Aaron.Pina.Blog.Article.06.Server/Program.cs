@@ -15,7 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddStackExchangeRedisCache(Configuration.RedisCache.Options);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(Configuration.JwtBearer.Options(rsa));
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(Configuration.Authorisation.Options);
 builder.Services.AddScoped<TokenRepository>();
 builder.Services.AddDbContext<TokenDbContext>(Configuration.DbContext.Options);
 builder.Services.Configure<TokenConfig>(builder.Configuration.GetSection(nameof(TokenConfig)));

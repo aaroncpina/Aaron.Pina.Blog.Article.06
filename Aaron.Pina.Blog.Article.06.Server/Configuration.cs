@@ -1,9 +1,9 @@
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
-using Microsoft.Extensions.Options;
 
 namespace Aaron.Pina.Blog.Article._06.Server;
 
@@ -29,6 +29,16 @@ public static class Configuration
             };
     }
 
+    public static class Authorisation
+    {
+        public static void Options(AuthorizationOptions options)
+        {
+            options.AddPolicy("admin", policy =>
+                policy.RequireAuthenticatedUser()
+                      .RequireClaim("role", "admin"));
+        }
+    }
+    
     public static class DbContext
     {
         public static void Options(DbContextOptionsBuilder builder) =>
