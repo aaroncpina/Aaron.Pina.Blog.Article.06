@@ -1,8 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aaron.Pina.Blog.Article.06.Server", "Aaron.Pina.Blog.Article.06.Server\Aaron.Pina.Blog.Article.06.Server.csproj", "{DC130477-4CAC-4CFB-B910-4771B711AE75}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aaron.Pina.Blog.Article.06.Shared", "Aaron.Pina.Blog.Article.06.Shared\Aaron.Pina.Blog.Article.06.Shared.csproj", "{83FDE214-BE8D-4CF6-8DBF-CA29AB647B70}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DC130477-4CAC-4CFB-B910-4771B711AE75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC130477-4CAC-4CFB-B910-4771B711AE75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC130477-4CAC-4CFB-B910-4771B711AE75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC130477-4CAC-4CFB-B910-4771B711AE75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83FDE214-BE8D-4CF6-8DBF-CA29AB647B70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83FDE214-BE8D-4CF6-8DBF-CA29AB647B70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83FDE214-BE8D-4CF6-8DBF-CA29AB647B70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83FDE214-BE8D-4CF6-8DBF-CA29AB647B70}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
