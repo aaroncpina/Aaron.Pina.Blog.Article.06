@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Caching.Distributed;
 using Aaron.Pina.Blog.Article._06.Shared;
 using Aaron.Pina.Blog.Article._06.Server;
 using Microsoft.IdentityModel.Tokens;
@@ -83,6 +84,18 @@ app.MapPost("/refresh", (IOptionsSnapshot<TokenConfig> config, HttpContext conte
         return Results.Ok(response);
     })
    .AllowAnonymous();
+
+app.MapPost("/blacklist", async (IDistributedCache blacklist, BlacklistRequest request) =>
+    {
+        var expires = new DateTimeOffset(request.AccessTokenExpiresAt);
+        if (expires < DateTimeOffset.UtcNow) return Results.BadRequest("Token already expired");
+        await blacklist.SetStringAsync(request.Jti.ToString(), string.Empty, new DistributedCacheEntryOptions
+        {
+            AbsoluteExpiration = expires
+        });
+        return Results.Ok();
+    })
+   .RequireAuthorization("admin");
 
 app.MapGet("/user", (HttpContext context) =>
     {
