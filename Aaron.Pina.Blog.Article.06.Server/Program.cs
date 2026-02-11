@@ -40,7 +40,7 @@ app.MapGet("/{role}/register", (UserRepository repo, string role) =>
             Role = role
         };
         repo.AddUser(user);
-        return Results.Ok(new UserResponse(user.Id, role));
+        return Results.Ok(user.Id);
     })
    .AllowAnonymous();
 

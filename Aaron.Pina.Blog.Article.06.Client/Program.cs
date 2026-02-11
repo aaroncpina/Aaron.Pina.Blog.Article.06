@@ -57,8 +57,8 @@ app.MapGet("/{role}/info", async (IHttpClientFactory factory, TokenRepository re
 
 app.MapGet("/admin/blacklist", async (IHttpClientFactory factory, TokenRepository repository) =>
 {
-    var store = repository.TokenStores["admin"];
-    if (store.AccessTokenExpiresAt is null) return Results.BadRequest("Admin token not yet initialised");
+    var store = repository.TokenStores["user"];
+    if (store.AccessTokenExpiresAt is null) return Results.BadRequest("User token not yet initialised");
     var handler = new JwtSecurityTokenHandler();
     if (!handler.CanReadToken(store.AccessToken)) return Results.BadRequest("Invalid access token");
     var token = handler.ReadJwtToken(store.AccessToken);
