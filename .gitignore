@@ -366,5 +366,5 @@ __pycache__/
 *.xsd.cs
 
 # Local files
-tokens.db*
+server.db*
 identifier.sqlite

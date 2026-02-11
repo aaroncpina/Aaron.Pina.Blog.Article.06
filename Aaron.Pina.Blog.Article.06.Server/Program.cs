@@ -57,10 +57,11 @@ app.MapGet("/token", (IOptionsSnapshot<TokenConfig> config, TokenRepository toke
         }
         var user = userRepo.TryGetUserById(userId);
         if (user is null) return Results.BadRequest("Invalid user id");
+        var jti = Guid.NewGuid();
         var now = DateTime.UtcNow;
         var refreshToken = TokenGenerator.GenerateRefreshToken();
-        var accessToken = TokenGenerator.GenerateToken(rsaKey, userId, user.Role, now, config.Value.AccessTokenLifetime);
-        var response = new TokenResponse(accessToken, refreshToken, config.Value.AccessTokenLifetime);
+        var accessToken = TokenGenerator.GenerateToken(rsaKey, jti, userId, user.Role, now, config.Value.AccessTokenLifetime);
+        var response = new TokenResponse(jti, accessToken, refreshToken, config.Value.AccessTokenLifetime);
         tokenRepo.SaveToken(new TokenEntity
         {
             RefreshTokenExpiresAt = now.AddMinutes(config.Value.RefreshTokenLifetime),
@@ -88,10 +89,11 @@ app.MapPost("/refresh", (IOptionsSnapshot<TokenConfig> config, HttpContext conte
         }
         var user = userRepo.TryGetUserById(token.UserId);
         if (user is null) return Results.BadRequest("Invalid user id");
+        var jti = Guid.NewGuid();
         var now = DateTime.UtcNow;
         var newRefreshToken = TokenGenerator.GenerateRefreshToken();
-        var accessToken = TokenGenerator.GenerateToken(rsaKey, token.UserId, user.Role, now, config.Value.AccessTokenLifetime);
-        var response = new TokenResponse(accessToken, newRefreshToken, config.Value.AccessTokenLifetime);
+        var accessToken = TokenGenerator.GenerateToken(rsaKey, jti, token.UserId, user.Role, now, config.Value.AccessTokenLifetime);
+        var response = new TokenResponse(jti, accessToken, newRefreshToken, config.Value.AccessTokenLifetime);
         token.RefreshTokenExpiresAt = now.AddMinutes(config.Value.RefreshTokenLifetime);
         token.RefreshToken = newRefreshToken;
         tokenRepo.UpdateToken(token);
