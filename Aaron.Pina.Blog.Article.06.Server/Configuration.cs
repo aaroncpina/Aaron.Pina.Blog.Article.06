@@ -55,7 +55,7 @@ public static class Configuration
     public static class DbContext
     {
         public static void Options(DbContextOptionsBuilder builder) =>
-            builder.UseSqlite("Data Source=tokens.db");
+            builder.UseSqlite("Data Source=server.db");
     }
 
     public static class RedisCache
