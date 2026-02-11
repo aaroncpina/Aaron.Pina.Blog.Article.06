@@ -52,7 +52,7 @@ app.MapGet("/{role}/info", async (IHttpClientFactory factory, TokenRepository re
     if (!response.IsSuccessStatusCode) return Results.BadRequest("Unable to get user info");
     var user = await response.Content.ReadFromJsonAsync<UserResponse>();
     if (user is null) return Results.BadRequest("Unable to parse user info");
-    return Results.Ok($"User Id: {user.UserId}");
+    return Results.Ok($"User Id: {user.UserId} | Role: {user.Role}");
 });
 
 app.MapGet("/admin/blacklist", async (IHttpClientFactory factory, TokenRepository repository) =>
