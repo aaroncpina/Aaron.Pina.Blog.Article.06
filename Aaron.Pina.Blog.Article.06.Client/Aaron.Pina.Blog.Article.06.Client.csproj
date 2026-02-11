@@ -7,4 +7,8 @@
         <RootNamespace>Aaron.Pina.Blog.Article._06.Client</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Aaron.Pina.Blog.Article.06.Shared\Aaron.Pina.Blog.Article.06.Shared.csproj" />
+    </ItemGroup>
+
 </Project>
