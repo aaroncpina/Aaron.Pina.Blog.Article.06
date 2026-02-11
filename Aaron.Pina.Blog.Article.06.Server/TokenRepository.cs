@@ -1,16 +1,16 @@
 namespace Aaron.Pina.Blog.Article._06.Server;
 
-public class TokenRepository(TokenDbContext dbContext)
+public class TokenRepository(ServerDbContext dbContext)
 {
     public void SaveToken(TokenEntity token)
     {
-        dbContext.Add(token);
+        dbContext.Tokens.Add(token);
         dbContext.SaveChanges();
     }
 
     public void UpdateToken(TokenEntity token)
     {
-        dbContext.Update(token);
+        dbContext.Tokens.Update(token);
         dbContext.SaveChanges();
     }
 

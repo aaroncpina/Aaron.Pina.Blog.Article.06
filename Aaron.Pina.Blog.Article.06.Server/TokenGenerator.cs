@@ -8,7 +8,7 @@ namespace Aaron.Pina.Blog.Article._06.Server;
 
 public static class TokenGenerator
 {
-    public static string GenerateToken(RsaSecurityKey rsaKey, Guid userId, DateTime now, double expiresIn)
+    public static string GenerateToken(RsaSecurityKey rsaKey, Guid userId, string role, DateTime now, double expiresIn)
     {
         var tokenDescriptor = new SecurityTokenDescriptor
         {
@@ -17,6 +17,7 @@ public static class TokenGenerator
             Audience = "https://localhost",
             Expires = now.AddMinutes(expiresIn),
             Subject = new ClaimsIdentity([
+                new Claim("role", role),
                 new Claim("sub", userId.ToString()),
                 new Claim("jti", Guid.NewGuid().ToString())
             ]),

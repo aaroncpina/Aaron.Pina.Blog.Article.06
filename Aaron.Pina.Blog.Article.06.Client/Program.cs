@@ -28,8 +28,7 @@ app.MapGet("/{role}/login", async (IHttpClientFactory factory, TokenRepository r
     if (!registerResponse.IsSuccessStatusCode) return Results.BadRequest("Unable to register");
     var userId = await registerResponse.Content.ReadFromJsonAsync<Guid>();
     if (userId == Guid.Empty) return Results.BadRequest("Unable to parse user id");
-    var userRequest = new UserRequest(userId, role);
-    using var tokenResponse = await client.PostAsJsonAsync("/token", userRequest);
+    using var tokenResponse = await client.GetAsync($"/token?userId={userId}");
     if (!tokenResponse.IsSuccessStatusCode) return Results.BadRequest("Unable to get token");
     var token = await tokenResponse.Content.ReadFromJsonAsync<TokenResponse>();
     if (token is null) return Results.BadRequest("Unable to parse token");

@@ -19,7 +19,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(Configuration.JwtBearer.Options(rsa));
 builder.Services.AddAuthorization(Configuration.Authorisation.Options);
 builder.Services.AddScoped<TokenRepository>();
-builder.Services.AddDbContext<TokenDbContext>(Configuration.DbContext.Options);
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddDbContext<ServerDbContext>(Configuration.DbContext.Options);
 builder.Services.Configure<TokenConfig>(builder.Configuration.GetSection(nameof(TokenConfig)));
 
 var app = builder.Build();
@@ -28,18 +29,25 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 using (var scope = app.Services.CreateScope())
-    scope.ServiceProvider.GetRequiredService<TokenDbContext>().Database.EnsureCreated();
+    scope.ServiceProvider.GetRequiredService<ServerDbContext>().Database.EnsureCreated();
 
-app.MapGet("/{role}/register", (string role) =>
-        Roles.ValidRoles.Contains(role)
-            ? Results.Ok(new UserResponse(Guid.NewGuid(), role))
-            : Results.BadRequest("Invalid role"))
+app.MapGet("/{role}/register", (UserRepository repo, string role) =>
+    {
+        if (!Roles.ValidRoles.Contains(role)) return Results.BadRequest("Invalid role");
+        var user = new UserEntity
+        {
+            Id = Guid.NewGuid(),
+            Role = role
+        };
+        repo.AddUser(user);
+        return Results.Ok(new UserResponse(user.Id, role));
+    })
    .AllowAnonymous();
 
-app.MapPost("/token", (IOptionsSnapshot<TokenConfig> config, TokenRepository repository, UserRequest request) =>
+app.MapGet("/token", (IOptionsSnapshot<TokenConfig> config, TokenRepository tokenRepo, UserRepository userRepo, Guid userId) =>
     {
-        var existing = repository.TryGetTokenByUserId(request.UserId);
-        if (existing is not null)
+        var token = tokenRepo.TryGetTokenByUserId(userId);
+        if (token is not null)
         {
             return Results.BadRequest(new
             {
@@ -47,28 +55,30 @@ app.MapPost("/token", (IOptionsSnapshot<TokenConfig> config, TokenRepository rep
                 Message = "Use the /refresh endpoint with your refresh token to get a new token"
             });
         }
+        var user = userRepo.TryGetUserById(userId);
+        if (user is null) return Results.BadRequest("Invalid user id");
         var now = DateTime.UtcNow;
         var refreshToken = TokenGenerator.GenerateRefreshToken();
-        var accessToken = TokenGenerator.GenerateToken(rsaKey, request.UserId, now, config.Value.AccessTokenLifetime);
+        var accessToken = TokenGenerator.GenerateToken(rsaKey, userId, user.Role, now, config.Value.AccessTokenLifetime);
         var response = new TokenResponse(accessToken, refreshToken, config.Value.AccessTokenLifetime);
-        repository.SaveToken(new TokenEntity
+        tokenRepo.SaveToken(new TokenEntity
         {
             RefreshTokenExpiresAt = now.AddMinutes(config.Value.RefreshTokenLifetime),
             RefreshToken = refreshToken,
-            UserId = request.UserId,
+            UserId = userId,
             CreatedAt = now
         });
         return Results.Ok(response);
     })
    .AllowAnonymous();
 
-app.MapPost("/refresh", (IOptionsSnapshot<TokenConfig> config, HttpContext context, TokenRepository repository) =>
+app.MapPost("/refresh", (IOptionsSnapshot<TokenConfig> config, HttpContext context, TokenRepository tokenRepo, UserRepository userRepo) =>
     {
         var refreshToken = context.Request.Form["refresh_token"].FirstOrDefault();
         if (string.IsNullOrEmpty(refreshToken)) return Results.BadRequest();
-        var existing = repository.TryGetTokenByRefreshToken(refreshToken);
-        if (existing is null) return Results.BadRequest();
-        if (existing.RefreshTokenExpiresAt < DateTime.UtcNow)
+        var token = tokenRepo.TryGetTokenByRefreshToken(refreshToken);
+        if (token is null) return Results.BadRequest();
+        if (token.RefreshTokenExpiresAt < DateTime.UtcNow)
         {
             return Results.BadRequest(new
             {
@@ -76,13 +86,15 @@ app.MapPost("/refresh", (IOptionsSnapshot<TokenConfig> config, HttpContext conte
                 Message = "Please login again to get a new token"
             });
         }
+        var user = userRepo.TryGetUserById(token.UserId);
+        if (user is null) return Results.BadRequest("Invalid user id");
         var now = DateTime.UtcNow;
         var newRefreshToken = TokenGenerator.GenerateRefreshToken();
-        var accessToken = TokenGenerator.GenerateToken(rsaKey, existing.UserId, now, config.Value.AccessTokenLifetime);
+        var accessToken = TokenGenerator.GenerateToken(rsaKey, token.UserId, user.Role, now, config.Value.AccessTokenLifetime);
         var response = new TokenResponse(accessToken, newRefreshToken, config.Value.AccessTokenLifetime);
-        existing.RefreshTokenExpiresAt = now.AddMinutes(config.Value.RefreshTokenLifetime);
-        existing.RefreshToken = newRefreshToken;
-        repository.UpdateToken(existing);
+        token.RefreshTokenExpiresAt = now.AddMinutes(config.Value.RefreshTokenLifetime);
+        token.RefreshToken = newRefreshToken;
+        tokenRepo.UpdateToken(token);
         return Results.Ok(response);
     })
    .AllowAnonymous();
