@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aaron.Pina.Blog.Article.06.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aaron.Pina.Blog.Article.06.Shared", "Aaron.Pina.Blog.Article.06.Shared\Aaron.Pina.Blog.Article.06.Shared.csproj", "{83FDE214-BE8D-4CF6-8DBF-CA29AB647B70}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aaron.Pina.Blog.Article.06.Client", "Aaron.Pina.Blog.Article.06.Client\Aaron.Pina.Blog.Article.06.Client.csproj", "{28AC3742-0BBA-4755-A168-C38D0F874057}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{83FDE214-BE8D-4CF6-8DBF-CA29AB647B70}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83FDE214-BE8D-4CF6-8DBF-CA29AB647B70}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{83FDE214-BE8D-4CF6-8DBF-CA29AB647B70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28AC3742-0BBA-4755-A168-C38D0F874057}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28AC3742-0BBA-4755-A168-C38D0F874057}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28AC3742-0BBA-4755-A168-C38D0F874057}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28AC3742-0BBA-4755-A168-C38D0F874057}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
