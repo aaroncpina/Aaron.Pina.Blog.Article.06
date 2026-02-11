@@ -1,9 +1,12 @@
 using Aaron.Pina.Blog.Article._06.Shared.Responses;
 using Aaron.Pina.Blog.Article._06.Shared.Requests;
+using static System.Net.Mime.MediaTypeNames;
 using Aaron.Pina.Blog.Article._06.Client;
 using Aaron.Pina.Blog.Article._06.Shared;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
+using System.Text.Json;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,17 +60,23 @@ app.MapGet("/{role}/info", async (IHttpClientFactory factory, TokenRepository re
 
 app.MapGet("/admin/blacklist", async (IHttpClientFactory factory, TokenRepository repository) =>
 {
-    var store = repository.TokenStores["user"];
-    if (store.AccessTokenExpiresAt is null) return Results.BadRequest("User token not yet initialised");
+    var userStore = repository.TokenStores["user"];
+    if (userStore.AccessTokenExpiresAt is null) return Results.BadRequest("User token not yet initialised");
     var handler = new JwtSecurityTokenHandler();
-    if (!handler.CanReadToken(store.AccessToken)) return Results.BadRequest("Invalid access token");
-    var token = handler.ReadJwtToken(store.AccessToken);
+    if (!handler.CanReadToken(userStore.AccessToken)) return Results.BadRequest("Invalid access token");
+    var token = handler.ReadJwtToken(userStore.AccessToken);
     var claim = token.Claims.FirstOrDefault(c => c.Type == "jti");
     if (claim is null || !Guid.TryParse(claim.Value, out var jti)) return Results.BadRequest("No jti claim found");
-    var expiresIn = store.AccessTokenExpiresAt.Value.Subtract(DateTime.UtcNow);
-    var request = new BlacklistRequest(jti, expiresIn.TotalSeconds);
+    var expiresIn = userStore.AccessTokenExpiresAt.Value.Subtract(DateTime.UtcNow);
     using var client = factory.CreateClient("admin-server-api");
-    var response = await client.PostAsJsonAsync("/blacklist", request);
+    if (client.BaseAddress is null) return Results.BadRequest("Unable to get base address");
+    var uriBuilder = new UriBuilder(client.BaseAddress) { Path = "blacklist" };
+    var adminStore = repository.TokenStores["admin"];
+    using var request = new HttpRequestMessage(HttpMethod.Post, uriBuilder.Uri);
+    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", adminStore.AccessToken);
+    var json = JsonSerializer.Serialize(new BlacklistRequest(jti, expiresIn.TotalSeconds));
+    request.Content = new StringContent(json, Encoding.UTF8, Application.Json);
+    var response = await client.SendAsync(request);
     if (!response.IsSuccessStatusCode) return Results.BadRequest("Unable to blacklist token");
     return Results.Ok("Token blacklisted");
 });
