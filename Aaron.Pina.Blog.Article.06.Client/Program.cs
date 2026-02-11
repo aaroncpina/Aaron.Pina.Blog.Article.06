@@ -64,7 +64,8 @@ app.MapGet("/admin/blacklist", async (IHttpClientFactory factory, TokenRepositor
     var token = handler.ReadJwtToken(store.AccessToken);
     var claim = token.Claims.FirstOrDefault(c => c.Type == "jti");
     if (claim is null || !Guid.TryParse(claim.Value, out var jti)) return Results.BadRequest("No jti claim found");
-    var request = new BlacklistRequest(jti, store.AccessTokenExpiresAt.Value);
+    var expiresIn = store.AccessTokenExpiresAt.Value.Subtract(DateTime.UtcNow);
+    var request = new BlacklistRequest(jti, expiresIn.TotalSeconds);
     using var client = factory.CreateClient("admin-server-api");
     var response = await client.PostAsJsonAsync("/blacklist", request);
     if (!response.IsSuccessStatusCode) return Results.BadRequest("Unable to blacklist token");

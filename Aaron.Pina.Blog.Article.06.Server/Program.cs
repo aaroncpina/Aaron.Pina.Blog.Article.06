@@ -103,7 +103,7 @@ app.MapPost("/refresh", (IOptionsSnapshot<TokenConfig> config, HttpContext conte
 
 app.MapPost("/blacklist", async (IDistributedCache blacklist, BlacklistRequest request) =>
     {
-        var expires = new DateTimeOffset(request.AccessTokenExpiresAt);
+        var expires = DateTimeOffset.UtcNow.AddSeconds(request.AccessTokenExpiresIn);
         if (expires < DateTimeOffset.UtcNow) return Results.BadRequest("Token already expired");
         await blacklist.SetStringAsync(request.Jti.ToString(), "revoked", new DistributedCacheEntryOptions
         {
