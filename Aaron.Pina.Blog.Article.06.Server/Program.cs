@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Aaron.Pina.Blog.Article._06.Shared.Responses;
+using Aaron.Pina.Blog.Article._06.Shared.Requests;
 using Microsoft.Extensions.Caching.Distributed;
 using Aaron.Pina.Blog.Article._06.Shared;
 using Aaron.Pina.Blog.Article._06.Server;
@@ -28,10 +30,10 @@ app.UseAuthorization();
 using (var scope = app.Services.CreateScope())
     scope.ServiceProvider.GetRequiredService<TokenDbContext>().Database.EnsureCreated();
 
-app.MapGet("/register-user", () => Results.Ok(new UserResponse(Guid.NewGuid(), "user")))
-   .AllowAnonymous();
-
-app.MapGet("/register-admin", () => Results.Ok(new UserResponse(Guid.NewGuid(), "admin")))
+app.MapGet("/{role}/register", (string role) =>
+        Roles.ValidRoles.Contains(role)
+            ? Results.Ok(new UserResponse(Guid.NewGuid(), role))
+            : Results.BadRequest("Invalid role"))
    .AllowAnonymous();
 
 app.MapPost("/token", (IOptionsSnapshot<TokenConfig> config, TokenRepository repository, UserRequest request) =>
